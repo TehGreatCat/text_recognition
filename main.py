@@ -15,6 +15,8 @@ from PyQt5 import QtGui
 import sys
 from PIL import ImageGrab
 from tesseract import get_string
+import requests
+import ast
 
 def setMoveWindow(widget):
     """
@@ -122,9 +124,10 @@ class Ui_MainWindow(object):
         # icon = QtGui.QIcon()
         # icon.addPixmap(QtGui.QPixmap("Handwritten OCR_16px.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         # self.pushButton_2.setIcon(icon)
-        # self.pushButton_2.clicked.connect(self.shoot)
+        self.pushButton_3.clicked.connect(self.translate)
         self.pushButton_3.setObjectName("pushButton_3")
         self.horizontalLayout.addWidget(self.pushButton_3)
+
 
 
 
@@ -240,10 +243,23 @@ class Ui_MainWindow(object):
         except Exception as e:
             print(e)
 
+    def translate(self):
+        try:
+            text = self.textBrowser.toPlainText()  # Получение текста из текстбокса
+            ok_text = "".join([line.replace("\n", " ") for line in text]).replace(";", ".").replace("- ", "")
+            req = requests.post("https://translate.yandex.net/api/v1.5/tr.json/translate?"
+                                "key=trnsl.1.1.20170728T113613Z.85ed6ab48bd75e8f."
+                                "5aa49e8cdc0685852d0e19df81717444b845b83e"
+                                "&lang=ru"       
+                                "&text=" + ok_text)  # Зарпос к Yandex Translate API
+            # print(ast.literal_eval(req.text)["text"][0])
+            if req.status_code == 200:
+                self.textBrowser.setText(ast.literal_eval(req.text)["text"][0])
+        except Exception as e:
+            print(e)
 
     def closeIt(self):
         self.close()
-
 
 
 if __name__ == "__main__":
